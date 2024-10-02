@@ -14,7 +14,6 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Vector2 dragAreaSize = new Vector2(20, 20);
     [Space]
     [SerializeField] private Transform nodesParent;
-    [SerializeField] private GameObject backPrefab;
 
     private bool isDrag = false;
     private Vector3 startDragPosition;
@@ -30,19 +29,10 @@ public class CameraController : MonoBehaviour
         clickHandler.DragStartEvent += OnStartDrag;
         clickHandler.DragEndEvent += OnStopDrag;
         nodes = nodesParent.GetComponentsInChildren<ColorNode>();
-        SpawnBack();
         var cameraPos = CameraHolder.Instance.transform.position;
         cameraPos.x = 0;
         cameraPos.y = 0;
         CameraHolder.Instance.transform.position = cameraPos;
-    }
-
-    private void SpawnBack()
-    {
-        var backDragObject = Instantiate(backPrefab, nodesParent);
-        backDragObject.transform.position = transform.position;
-        backDragObject.transform.SetSiblingIndex(0);
-        backDragObject.transform.localScale = dragAreaSize;
     }
 
     private void OnDrawGizmos()
