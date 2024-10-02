@@ -31,6 +31,10 @@ public class CameraController : MonoBehaviour
         clickHandler.DragEndEvent += OnStopDrag;
         nodes = nodesParent.GetComponentsInChildren<ColorNode>();
         SpawnBack();
+        var cameraPos = CameraHolder.Instance.transform.position;
+        cameraPos.x = 0;
+        cameraPos.y = 0;
+        CameraHolder.Instance.transform.position = cameraPos;
     }
 
     private void SpawnBack()
@@ -76,11 +80,28 @@ public class CameraController : MonoBehaviour
         OnCameraDrag();
     }
 
-    public void OnCameraDrag()
+    private void OnCameraDrag()
     {
         var cameraTransform = CameraHolder.Instance.transform;
         var secondPosition = Input.mousePosition;
         var newPosition = (startDragPosition - secondPosition) * distanceForPixel + startCameraPosition;
         cameraTransform.position = new Vector3(newPosition.x, newPosition.y, cameraTransform.position.z);
+        ClampCameraPosition();
+    }
+
+    private void ClampCameraPosition()
+    {
+        var leftTopCornerPos = CameraHolder.Instance.MainCamera.ScreenToWorldPoint(new Vector3(0, Screen.height));
+        var rightBottomCornerPos = CameraHolder.Instance.MainCamera.ScreenToWorldPoint(new Vector3(Screen.width, 0));
+        var areaTopLeftCorner = (Vector2)transform.position - new Vector2(dragAreaSize.x / 2, -dragAreaSize.y / 2);
+        var areaBottomRightCorner = (Vector2)transform.position + new Vector2(dragAreaSize.x / 2, -dragAreaSize.y / 2);
+        var moveCameraOffset = Vector3.zero;
+
+        if (leftTopCornerPos.x < areaTopLeftCorner.x) moveCameraOffset.x -= leftTopCornerPos.x - areaTopLeftCorner.x;
+        if (rightBottomCornerPos.x > areaBottomRightCorner.x) moveCameraOffset.x -= rightBottomCornerPos.x - areaBottomRightCorner.x;
+        if (rightBottomCornerPos.y < areaBottomRightCorner.y) moveCameraOffset.y -= rightBottomCornerPos.y - areaBottomRightCorner.y;
+        if (leftTopCornerPos.y > areaTopLeftCorner.y) moveCameraOffset.y -= leftTopCornerPos.y - areaTopLeftCorner.y;
+
+        CameraHolder.Instance.transform.position += moveCameraOffset;
     }
 }
